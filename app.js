@@ -1,15 +1,18 @@
-/* eslint-disable linebreak-style */
 require('dotenv').config();
+
+console.log(process.env.NODE_ENV);
 
 const express = require('express');
 const mongoose = require('mongoose');
 const { celebrate, Joi } = require('celebrate');
+const validator = require('validator');
 
 // const { NODE_ENV, JWT_SECRET } = process.env;
 const { PORT = 3000 } = process.env;
 const { errors } = require('celebrate');
-const route = require('./routes/routes');
-const { login, createUser } = require('./controllers/controllers');
+const route = require('./routes/users');
+const cards = require('./routes/cards');
+const { login, createUser } = require('./controllers/users');
 
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/notFoundError');
@@ -17,7 +20,14 @@ const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/moviesdb', {
+const validateURL = (value) => {
+  if (!validator.isURL(value, { require_protocol: true })) {
+    throw new Error('Неправильный формат ссылки');
+  }
+  return value;
+};
+
+mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
 
@@ -36,6 +46,8 @@ app.post('/signin', celebrate({
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2),
+    avatar: Joi.string().custom(validateURL).min(2).max(30),
     email: Joi.string().required().min(2).max(30),
     password: Joi.string().required().min(2),
   }),
@@ -45,6 +57,7 @@ app.post('/signup', celebrate({
 app.use(auth);
 
 app.use('/', route);
+app.use('/', cards);
 
 app.use(errorLogger);
 
