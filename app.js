@@ -64,7 +64,7 @@ app.use(errorLogger);
 app.use((req, res, next) => {
   next(new NotFoundError('Маршрут не найден'));
 });
-
+// ошибки
 app.use(errors());
 
 app.use((err, req, res, next) => {
