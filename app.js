@@ -1,15 +1,15 @@
-/* eslint-disable linebreak-style */
 require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
-const { celebrate, Joi } = require('celebrate');
 
-// const { NODE_ENV, JWT_SECRET } = process.env;
+const { DB_ADRESS } = process.env;
 const { PORT = 3000 } = process.env;
 const { errors } = require('celebrate');
-const route = require('./routes/routes');
-const { login, createUser } = require('./controllers/controllers');
+
+const sign = require('./routes/sign_rout');
+const users = require('./routes/users_rout');
+const movies = require('./routes/movies_rout');
 
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/notFoundError');
@@ -17,7 +17,7 @@ const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/moviesdb', {
+mongoose.connect(DB_ADRESS, {
   useNewUrlParser: true,
 });
 
@@ -26,31 +26,20 @@ app.use(express.urlencoded({ extended: true })); // for parsing application/x-ww
 
 app.use(requestLogger);
 
-app.post('/signin', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().min(2).max(30),
-    password: Joi.string().required().min(2),
-  }),
-}), login);
-
-app.post('/signup', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    email: Joi.string().required().min(2).max(30),
-    password: Joi.string().required().min(2),
-  }),
-}), createUser);
+app.use('/', sign);
 
 // авторизация
 app.use(auth);
 
-app.use('/', route);
-
-app.use(errorLogger);
+app.use('/', users);
+app.use('/', movies);
 
 app.use((req, res, next) => {
   next(new NotFoundError('Маршрут не найден'));
 });
+
+app.use(errorLogger);
+
 // ошибки
 app.use(errors());
 

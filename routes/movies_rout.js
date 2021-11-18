@@ -1,4 +1,3 @@
-/* eslint-disable linebreak-style */
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const validator = require('validator');
@@ -6,7 +5,7 @@ const validator = require('validator');
 module.exports = router;
 
 const {
-  postMovie, getMovies, deleteMovie, myInfo, changeInfo,
+  postMovie, getMovies, deleteMovie,
 } = require('../controllers/controllers');
 
 const validateURL = (value) => {
@@ -15,15 +14,6 @@ const validateURL = (value) => {
   }
   return value;
 };
-
-router.get('/users/me', myInfo);
-
-router.patch('/users/me', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    about: Joi.string().required().min(2),
-  }),
-}), changeInfo);
 
 router.get('/movies', getMovies);
 
@@ -38,13 +28,13 @@ router.post('/movies', celebrate({
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
     thumbnail: Joi.string().custom(validateURL).required().min(2),
-    movieId: Joi.string().length(24).hex(),
+    movieId: Joi.number(),
     image: Joi.string().custom(validateURL).required().min(2),
   }),
 }), postMovie);
 
 router.delete('/movies/:id', celebrate({
   params: Joi.object().keys({
-    id: Joi.string().length(24).hex(),
+    id: Joi.number(),
   }),
 }), deleteMovie);

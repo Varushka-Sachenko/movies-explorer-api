@@ -1,4 +1,4 @@
-/* eslint-disable linebreak-style */
+const { NODE_ENV, JWT_SECRET } = process.env;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -16,7 +16,7 @@ module.exports.login = (req, res, next) => {
   } = req.body;
   User.findUser(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
       return res.send({ token });
     })
     .catch(() => next(new UnauthorizedError('Неправильная почта или пароль')));
@@ -39,8 +39,7 @@ module.exports.createUser = (req, res, next) => {
         .catch((err) => {
           if (err.name === 'MongoServerError' && err.code === 11000) {
             next(new ConflictError('Пользователь с данным email уже существует'));
-          }
-          if (err.name === 'CastError' || (err.name === 'ValidationError')) {
+          } else if (err.name === 'CastError' || (err.name === 'ValidationError')) {
             next(new DataError('Неправильные данные'));
           }
           next(err);
@@ -56,8 +55,8 @@ module.exports.myInfo = (req, res, next) => {
 };
 
 module.exports.changeInfo = (req, res, next) => {
-  const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+  const { name, email } = req.body;
+  User.findByIdAndUpdate(req.user._id, { name, email }, { new: true, runValidators: true })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError' || (err.name === 'ValidationError')) {
@@ -79,7 +78,7 @@ module.exports.postMovie = (req, res, next) => {
     .then((movie) => res.send({ data: movie }))
     .catch((err) => {
       if (err.name === 'CastError' || (err.name === 'ValidationError')) {
-        next(new DataError('Неправильные данные'));
+        return next(new DataError('Неправильные данные'));
       }
       return next(err);
     });
@@ -93,12 +92,13 @@ module.exports.deleteMovie = (req, res, next) => {
       }
       if (movie.owner.equals(req.user._id)) {
         Movie.deleteOne(movie)
-          .then(() => res.send({ data: movie }));
+          .then(() => res.send({ data: movie }))
+          .catch(next);
       } else { throw new AccessError('Нельзя удалять чужие карточки'); }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new DataError('Неправильные данные'));
+        return next(new DataError('Неправильные данные'));
       }
       return next(err);
     });
