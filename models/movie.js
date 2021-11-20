@@ -58,8 +58,9 @@ const cardSchema = new mongoose.Schema({
   },
 
   movieId: {
-    type: Number,
+    type: String,
     required: true,
+    length: 24,
   },
 
   nameRU: {

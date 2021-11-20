@@ -5,7 +5,7 @@ module.exports = router;
 
 const {
   myInfo, changeInfo,
-} = require('../controllers/controllers');
+} = require('../controllers/users_contr');
 
 router.get('/users/me', myInfo);
 

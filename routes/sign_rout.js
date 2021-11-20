@@ -6,7 +6,7 @@ module.exports = router;
 
 const {
   login, createUser,
-} = require('../controllers/controllers');
+} = require('../controllers/sign_contr');
 
 router.post('/signin', celebrate({
   body: Joi.object().keys({

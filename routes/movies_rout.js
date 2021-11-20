@@ -6,7 +6,7 @@ module.exports = router;
 
 const {
   postMovie, getMovies, deleteMovie,
-} = require('../controllers/controllers');
+} = require('../controllers/movies_contr');
 
 const validateURL = (value) => {
   if (!validator.isURL(value, { require_protocol: true })) {
@@ -28,13 +28,13 @@ router.post('/movies', celebrate({
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
     thumbnail: Joi.string().custom(validateURL).required().min(2),
-    movieId: Joi.number(),
+    movieId: Joi.number().required(),
     image: Joi.string().custom(validateURL).required().min(2),
   }),
 }), postMovie);
 
 router.delete('/movies/:id', celebrate({
   params: Joi.object().keys({
-    id: Joi.number(),
+    id: Joi.string().length(24).hex(),
   }),
 }), deleteMovie);
