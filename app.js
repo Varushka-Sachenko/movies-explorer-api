@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 const express = require('express');
 const mongoose = require('mongoose');
 
-const { DB_ADRESS = 'mongodb://localhost:27017/moviedb' } = process.env;
+const { DB_ADRESS = 'mongodb://127.0.0.1/moviedb' } = process.env;
 const { PORT = 3000 } = process.env;
 const { errors } = require('celebrate');
 
